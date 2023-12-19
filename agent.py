@@ -5,7 +5,7 @@ from collections import deque  # data structure
 from game import SnakeGameAI, Direction, Point
 
 MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
+BATCH_SIZE = 1000 # grab x samples from memory
 LR = 0.001
 
 
@@ -16,6 +16,8 @@ class Agent:
         self.epsilon = 0  # param to control the randomness
         self.gamma = 0  # discount rate
         self.memory = deque(maxlen=MAX_MEMORY) # if we exceed the memory, it will remove elements from the left = popleft()
+        self.model = None  # TODO
+        self.trainer = None  # NONE
         # TODO: model, trainer
 
 
@@ -70,16 +72,35 @@ class Agent:
         return np.array(state, dtype=int) # convert state list into numpy array of type int. Trick to convert Boolean to binary
 
     def remember(self, state, action, reward, next_state, done):  # done = current game over
-        pass
+        self.memory.append((state, action, reward, next_state, done))  # pass tuple, popleft if MAX_MEMORY is reached
 
     def train_long_memory(self):
-        pass
+        if len(self.memory) > BATCH_SIZE:
+            mini_sample = random.sample(self.memory, BATCH_SIZE) # return list of tuples
+        else:
+            mini_sample = self.memory
 
+        states, actions, rewards, next_states, dones = zip(*mini_sample)  # extract
+        self.trainer.train_step(states, actions, rewards, next_states, dones)
+
+    # train only for one game step
     def train_short_memory(self, state, action, reward, next_state, done):
-        pass
+        self.trainer.train_step(state, action, reward, next_state, done)
 
-    def get_action(self, state):
-        pass
+    def get_action(self, state): # 1:08:30 YT
+        # random moves: tradeoff exploration (explore the environment) / exploitation (exploit agent/model)
+        self.epsilon = 80 - self.n_games
+        final_move = [0, 0, 0]
+        if random.randint(0, 200) < self.epsilon:
+            move = random.randint(0, 2)
+            final_move[move] = 1
+        else:
+            state0 = torch.tensor(state, dtype=torch.float)
+            prediction = self.model.predict(state0)
+            move = torch.argmax(prediction).item() # get max
+            final_move[move] = 1
+
+        return final_move
 
     def train(self):
         plot_scores = [] # used for plotting
