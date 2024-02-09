@@ -9,6 +9,7 @@ from helper import plot
 MAX_MEMORY = 100_000
 BATCH_SIZE = 1000  # grab x samples from memory
 LR = 0.001
+NEURONEN = 524
 
 
 class Agent:
@@ -16,9 +17,9 @@ class Agent:
     def __init__(self):
         self.n_games = 0  # number of games
         self.epsilon = 0  # param to control the randomness
-        self.gamma = 0.9  # discount rate, smaller than 1
+        self.gamma = 0.99  # discount rate, smaller than 1
         self.memory = deque(maxlen=MAX_MEMORY)  # if we exceed the memory, it will remove elements from the left = popleft()
-        self.model = Linear_QNet(11, 256, 3)
+        self.model = Linear_QNet(11, NEURONEN, 3)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
         # TODO: model, trainer
 
@@ -114,6 +115,7 @@ def train():
     game = SnakeGameAI()
     while True:
         # get old state
+
         state_old = agent.get_state(game)
 
         # get move
@@ -139,13 +141,24 @@ def train():
                 record = score
                 agent.model.save()
 
-            print('Game', agent.n_games, 'Score', score, 'Record: ', record)
+            #print('Game', agent.n_games, 'Score', score, 'Record: ', record)
 
             plot_scores.append(score)
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            plot(plot_scores, plot_mean_scores)
+            #plot(plot_scores, plot_mean_scores)
+
+            if agent.n_games % 50 == 0:
+                print("NEURONEN: " + str(NEURONEN))
+                print("MAX_MEMORY: " + str(MAX_MEMORY))
+                print("BATCH_SIZE: " + str(BATCH_SIZE))
+                print("LR: " + str(LR))
+                print("Gamma: " + str(agent.gamma))
+                print("Epsilon: " + str(agent.epsilon))
+                print(str(agent.n_games) + "Spiele ")
+                print("Rekord: " + str(record))
+                print("Durchschnitt: " + str(mean_score) + "\n")
 
 
 if __name__ == '__main__':

@@ -30,7 +30,7 @@ BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
 BLOCK_SIZE = 20
-SPEED = 37
+SPEED = 15
 
 class SnakeGameAI:
 
@@ -66,7 +66,18 @@ class SnakeGameAI:
         if self.food in self.snake:
             self._place_food()
 
+    def is_enclosing(self):
+        free_space = 0
+        directions = [Point(0, -BLOCK_SIZE), Point(0, BLOCK_SIZE), Point(-BLOCK_SIZE, 0), Point(BLOCK_SIZE, 0)]
+        for d in directions:
+            next_point = Point(self.head.x + d.x, self.head.y + d.y)
+            if not (next_point in self.snake or self.is_collision(next_point)):
+                free_space += 1
+
+        return free_space < 2
+
     def play_step(self, action):
+        #print("speed" + str(SPEED))
         self.frame_iteration += 1
         # 1. collect user input
         for event in pygame.event.get():
@@ -85,8 +96,13 @@ class SnakeGameAI:
             game_over = True
             reward = -10
             return reward, game_over, self.score
+        # else:
+        #     if self.is_enclosing():
+        #         print("is_enclosing")
+        #         reward = -30
+        #         return reward, game_over, self.score
 
-        # 4. place new food or just move
+                # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
             reward = 10

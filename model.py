@@ -8,8 +8,8 @@ import os
 class Linear_QNet(nn.Module):
     def __init__(self, input_size, hidden_size, output_size):
         super().__init__()
-        self.linear1 = nn.Linear(input_size, hidden_size)
-        self.linear2 = nn.Linear(hidden_size, output_size)
+        self.linear1 = nn.Linear(input_size, hidden_size) # erste lineare Schicht
+        self.linear2 = nn.Linear(hidden_size, output_size) # zweite lineare Schicht
 
     # prediction function
     def forward(self, x):  # x = tensor
